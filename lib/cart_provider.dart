@@ -1,57 +1,70 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shopping_project/Model/cartModel.dart';
+import 'package:shopping_project/dbhelper.dart';
 
 class CartProvider with ChangeNotifier {
+  DBHelper db = DBHelper();
   int _counter = 0;
   double _totalPrice = 0.0;
+  List<Cart> cart = [];
 
-  int get counter => _counter;
-  double get totalPrice => _totalPrice;
+  int getCounter() => _counter;
+  double getTotalPrice() => _totalPrice;
 
-  Future<void> setPreference() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt('cart_items', _counter);
-    prefs.setDouble('total_price', _totalPrice);
-  }
-
-  Future<void> getPreference() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _counter = prefs.getInt('cart_items') ?? 0;
+  Future<void> _getSharedPrefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    _counter = prefs.getInt('cart_counter') ?? 0;
     _totalPrice = prefs.getDouble('total_price') ?? 0.0;
     notifyListeners();
   }
 
-  void addCounter() {
-    _counter++;
-    setPreference();
-    notifyListeners();
+  Future<void> _saveSharedPrefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt('cart_counter', _counter);
+    prefs.setDouble('total_price', _totalPrice);
   }
 
-  int getCounter() {
-    getPreference();
-    return _counter;
+  void addCounter() {
+    _counter++;
+    _saveSharedPrefs();
+    notifyListeners();
   }
 
   void removeCounter() {
-    _counter--;
-    setPreference();
+    if (_counter > 0) {
+      _counter--;
+    } else {
+      _counter = 0;
+    }
+    _saveSharedPrefs();
     notifyListeners();
   }
 
-  void addTotalPrice(double price) {
-    _totalPrice += price;
-    setPreference();
+  void addTotalPrice(double productPrice) {
+    _totalPrice += productPrice;
+    _saveSharedPrefs();
     notifyListeners();
   }
 
-  void removeTotalPrice(double price) {
-    _totalPrice -= price;
-    setPreference();
+  void removeTotalPrice(double productPrice) {
+    _totalPrice -= productPrice;
+    _saveSharedPrefs();
     notifyListeners();
   }
 
-  double getTotalPrice() {
-    getPreference();
-    return _totalPrice;
+  void resetCart() {
+    _counter = 0;
+    _totalPrice = 0.0;
+    _saveSharedPrefs();
+    notifyListeners();
+  }
+
+  Future<List<Cart>> getData() async {
+    cart = await db.getCartList();
+    _getSharedPrefs();
+    return cart;
   }
 }

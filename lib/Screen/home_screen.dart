@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:provider/provider.dart';
 import 'package:shopping_project/Model/cartModel.dart';
+import 'package:shopping_project/Screen/cart_screen.dart';
 import 'package:shopping_project/cart_provider.dart';
 import 'package:shopping_project/dbhelper.dart';
 
@@ -59,17 +60,23 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('Product List'),
           centerTitle: true,
           actions: [
-            Center(
-              child: badges.Badge(
-                badgeContent: Consumer<CartProvider>(
-                  builder: (context, value, child) {
-                    return Text(
-                      value.getCounter().toString(),
-                      style: const TextStyle(color: Colors.white),
-                    );
-                  },
+            InkWell(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => cartScreen()));
+              },
+              child: Center(
+                child: badges.Badge(
+                  badgeContent: Consumer<CartProvider>(
+                    builder: (context, value, child) {
+                      return Text(
+                        value.getCounter().toString(),
+                        style: const TextStyle(color: Colors.white),
+                      );
+                    },
+                  ),
+                  child: const Icon(Icons.shopping_bag),
                 ),
-                child: const Icon(Icons.shopping_bag),
               ),
             ),
             SizedBox(width: MediaQuery.of(context).size.width * 0.04)

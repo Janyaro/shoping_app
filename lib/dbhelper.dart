@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shopping_project/Model/cartModel.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:io' as io;
@@ -16,19 +17,38 @@ class DBHelper {
 
   Future<Database> _initDatabase() async {
     io.Directory directory = await getApplicationDocumentsDirectory();
-    String path = join(directory.path, 'cart2.db');
+    String path = join(directory.path, 'shoppingCart.db');
     return openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute(
-      'CREATE TABLE cart2 (id INTEGER PRIMARY KEY, productId TEXT UNIQUE, productName TEXT, initialPrice INTEGER, productPrice INTEGER, quaintity INTEGER, unitTag TEXT, image TEXT)',
+      'CREATE TABLE shoppingCart (id INTEGER PRIMARY KEY, productId TEXT UNIQUE, productName TEXT, initialPrice INTEGER, productPrice INTEGER, quaintity INTEGER, unitTag TEXT, image TEXT)',
     );
   }
 
   Future<int> insert(Cart cart) async {
     Database dbClient = await db;
-    return await dbClient.insert('cart2', cart.toMap(),
+    return await dbClient.insert('shoppingCart', cart.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Cart>> getCartList() async {
+    var dbCilent = await db;
+    final List<Map<String, Object?>> queryResult =
+        await dbCilent!.query('shoppingCart');
+    return queryResult.map((e) => Cart.fromMap(e)).toList();
+  }
+
+  Future<int> delete(int id) async {
+    var dbClient = await db;
+    return await dbClient
+        .delete('shoppingCart', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> updateQuaintity(Cart cart) async {
+    var dbClient = await db;
+    return await dbClient.update('shoppingCart', cart.toMap(),
+        where: 'id = ?', whereArgs: [cart.id]);
   }
 }
